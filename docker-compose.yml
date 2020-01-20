@@ -3,8 +3,10 @@ version: "3.6"
 networks:
   cgi-net:
     driver: bridge
+    name: cgi-net
   inter-net:
     driver: bridge
+    name: inter-net
 
 services:
 
