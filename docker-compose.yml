@@ -1,0 +1,140 @@
+version: "3"
+
+networks:
+  cgi-net:
+    driver: bridge
+  inter-net:
+    driver: bridge
+
+services:
+
+  #######################################
+  # Postgres: The database used by Kong
+  #######################################
+  kong-database:
+    image: postgres:11
+    restart: always
+    networks:
+      - cgi-net
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  #######################################
+  # Kong database migration
+  #######################################
+  kong-migration:
+    image: kong:0.14
+    command: "kong migrations up"
+    networks:
+      - cgi-net
+    restart: on-failure
+    environment:
+      KONG_PG_HOST: kong-database
+    links:
+      - kong-database
+    depends_on:
+      - kong-database
+
+  #######################################
+  # Kong: The API Gateway
+  #######################################
+  kong:
+    image: kong:0.14
+    restart: always
+    networks:
+      - cgi-net
+    environment:
+      KONG_PG_HOST: kong-database
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    depends_on:
+      - kong-migration
+      - kong-database
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://kong:8001"]
+      interval: 5s
+      timeout: 2s
+      retries: 15
+    # ports:
+    #   - "8001:8001"
+    #   - "8000:8000"
+
+  #######################################
+  # Konga database prepare
+  #######################################
+  konga-prepare:
+    image: pantsel/konga:0.13.0
+    command: "-c prepare -a postgres -u postgresql://kong@kong-database:5432/konga_db"
+    networks:
+      - cgi-net
+    restart: on-failure
+    links:
+      - kong-database
+    depends_on:
+      - kong-database
+
+  #######################################
+  # Konga: Kong GUI
+  #######################################
+  konga:
+    image: pantsel/konga:0.13.0
+    restart: always
+    networks:
+        - cgi-net
+    environment:
+      DB_ADAPTER: postgres
+      DB_HOST: kong-database
+      DB_USER: kong
+      TOKEN_SECRET: km1GUr4RkcQD7DewhJPNXrCuZwcKmqjb
+      DB_DATABASE: konga_db
+      NODE_ENV: production
+    links:
+      - kong
+    depends_on:
+      - kong-database
+    ports:
+      - "1337:1337"
+  kafka:
+    image: wurstmeister/kafka:latest
+    restart: always
+    networks:
+      - inter-net
+    ports:
+      - target: 9094
+        published: 9094
+        protocol: tcp
+        mode: host
+    links:
+      - zookeeper
+    depends_on:
+      - zookeeper
+    env_file: .env
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+      - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
+      - /var/run/docker.sock:/var/run/docker.sock
+  zookeeper:
+    image: wurstmeister/zookeeper
+    restart: always
+    networks:
+      - inter-net
+    # ports:
+    #   - "2181:2181"
+    volumes:
+      - ./zk-single-kafka-single/zoo1/data:/data
+      - ./zk-single-kafka-single/zoo1/datalog:/datalog
+  
