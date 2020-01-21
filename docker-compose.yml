@@ -12,6 +12,7 @@ services:
   # Postgres: The database used by Kong
   #######################################
   kong-database:
+    container_name: kong-database
     image: postgres:11
     restart: always
     networks:
@@ -47,6 +48,7 @@ services:
   # Kong: The API Gateway
   #######################################
   kong:
+    container_name: kong
     image: kong:0.14
     restart: always
     networks:
@@ -86,6 +88,7 @@ services:
   # Konga: Kong GUI
   #######################################
   konga:
+    container_name: konga
     image: pantsel/konga:0.13.0
     restart: always
     networks:
@@ -104,6 +107,7 @@ services:
     ports:
       - "1337:1337"
   kafka:
+    container_name: kafka
     image: wurstmeister/kafka:latest
     restart: always
     networks:
@@ -127,6 +131,7 @@ services:
       - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
       - /var/run/docker.sock:/var/run/docker.sock
   zookeeper:
+    container_name: zookeeper
     image: wurstmeister/zookeeper
     restart: always
     networks:
