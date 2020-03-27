@@ -15,7 +15,7 @@ services:
       - ./nginx/tls:/etc/nginx/tls
       - /data/www/certbot:/etc/letsencrypt
       - /data/www/certbot:/var/www/certbot
-      - ./data/site:/var/www/html/
+      - /data/www/site:/var/www/html/
       - /var/log/nginx:/var/log/nginx
     networks:
       - inter-net
