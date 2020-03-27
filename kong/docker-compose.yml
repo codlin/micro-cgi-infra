@@ -60,11 +60,10 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
     networks:
       - cgi-net
+      - inter-net
     ports:
       - "8000:8000/tcp"
-      - "8001:8001/tcp"
       - "8443:8443/tcp"
-      - "8444:8444/tcp"
     deploy:
       restart_policy:
         condition: on-failure
@@ -114,44 +113,6 @@ services:
     links:
       - kongdb
       - kong
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-  kafka:
-    image: wurstmeister/kafka:latest
-    container_name: kafka
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://kafka:9094
-      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-    volumes:
-      - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - inter-net
-    ports:
-      - "9094:9094"
-    depends_on:
-      - zookeeper
-    links:
-      - zookeeper
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-  zookeeper:
-    container_name: zookeeper
-    image: wurstmeister/zookeeper
-    volumes:
-      - ./zk-single-kafka-single/zoo1/data:/data
-      - ./zk-single-kafka-single/zoo1/datalog:/datalog
-    networks:
-      - inter-net
-    # ports:
-    #   - "2181:2181"
     deploy:
       restart_policy:
         condition: on-failure

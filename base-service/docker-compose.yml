@@ -1,0 +1,54 @@
+version: '3.6'
+
+networks:
+  inner-net:
+    external: false
+    name: inner-net
+
+services:
+  rabbitmq:
+    image: bitnami/rabbitmq:latest
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - /data/rabbitmq-persistence:/bitnami
+    networks:
+      - inner-net
+    ports:
+      # - '5672:5672'
+      - '15672:15672'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - inner-net
+    command: redis-server --requirepass ${CACHE_SERVER_PASSWD}
+    # ports:
+    #   - 6379:6379
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+    volumes:
+      - /data/services/redis:/data
+  mysqldb:
+    image: mysql:latest
+    container_name: account-db
+    networks:
+      - inner-net
+    volumes:
+      - /data/services/mysql:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --init-connect='SET NAMES utf8mb4;' --innodb-flush-log-at-trx-commit=0
+    env_file: .env
+    # ports:
+    #   - "3306:3306"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s

@@ -1,0 +1,51 @@
+version: "3.6"
+
+networks:
+  cgi-net:
+    external: true
+  inter-net:
+    external: false
+    name: inter-net
+  
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/tls:/etc/nginx/tls
+      - /data/www/certbot:/etc/letsencrypt
+      - /data/www/certbot:/var/www/certbot
+      - ./data/site:/var/www/html/
+      - /var/log/nginx:/var/log/nginx
+    networks:
+      - inter-net
+      - cgi-net
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  certbot:
+    restart: always
+    image: certbot/certbot
+    volumes:
+      - /data/www/certbot/conf:/etc/letsencrypt
+      - /data/www/certbot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - inter-net
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
