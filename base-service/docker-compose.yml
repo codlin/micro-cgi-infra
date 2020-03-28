@@ -19,9 +19,9 @@ services:
       - rabbitmq_data:/bitnami
     networks:
       - inner-net
-    ports:
-      # - '5672:5672'
-      - '15672:15672'
+    # ports:
+    #   - '5672:5672'
+    #   - '15672:15672'
     deploy:
       restart_policy:
         condition: on-failure
