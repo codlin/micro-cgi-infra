@@ -1,11 +1,8 @@
 version: "3.6"
 
 networks:
-  cgi-net:
-    external: true
   inter-net:
-    external: false
-    name: inter-net
+    external: true
   
 services:
   nginx:
@@ -20,7 +17,6 @@ services:
       - /var/log/nginx:/var/log/nginx
     networks:
       - inter-net
-      - cgi-net
     ports:
       - "80:80"
       - "443:443"
