@@ -61,9 +61,9 @@ services:
     networks:
       - cgi-net
       - inter-net
-    ports:
-      - "8000:8000/tcp"
-      - "8443:8443/tcp"
+    # ports:
+    #   - "8000:8000/tcp"
+    #   - "8443:8443/tcp"
     deploy:
       restart_policy:
         condition: on-failure
