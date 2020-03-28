@@ -5,6 +5,9 @@ networks:
     external: false
     name: inner-net
 
+volumes:
+    rabbitmq_data: {}
+
 services:
   rabbitmq:
     image: bitnami/rabbitmq:latest
@@ -13,7 +16,7 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     volumes:
-      - /data/services/rabbitmq:/bitnami
+      - rabbitmq_data:/bitnami
     networks:
       - inner-net
     ports:
