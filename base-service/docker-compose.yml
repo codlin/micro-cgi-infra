@@ -7,6 +7,7 @@ networks:
 
 volumes:
     rabbitmq_data: {}
+    postgres:
 
 services:
   rabbitmq:
@@ -55,3 +56,34 @@ services:
       restart_policy:
         condition: on-failure
         delay: 10s
+  postgres:
+    container_name: postgres
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+    # ports:
+    #   - "5432:5432"
+    networks:
+      - inner-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+  # pgadmin:
+  #   container_name: pgadmin
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-example@abc.com}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-TBcsdwuESD}
+  #   volumes:
+  #      - pgadmin:/root/.pgadmin
+  #   ports:
+  #     - "${PGADMIN_PORT:-5050}:80"
+  #   networks:
+  #     - inner-net
+  #   restart: unless-stopped
