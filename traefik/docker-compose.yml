@@ -1,0 +1,30 @@
+version: '3.6'
+
+networks:
+  inner-net:
+    external: false
+    name: inner-net
+
+services:
+
+  traefik:
+    container_name: traefik
+    image: traefik:v2.2.0
+    restart: always
+    ports:
+      - 8080:80
+      # - 443:443
+    networks:
+      - inner-net
+    command: traefik --configFile /etc/traefik.toml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - ./ssl/:/data/ssl/:ro
+      - ./traefik.toml:/etc/traefik.toml:ro
+      - ./config/:/etc/traefik/config/:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy off localhost:8080/ping || exit 1"]
+      interval: 3s
+      timeout: 5s
+
+
