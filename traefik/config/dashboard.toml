@@ -1,22 +1,22 @@
 [http.middlewares.dash-auth.basicAuth]
   users = [
-    "test:$apr1$VJRB7bhC$ki8fe1cw58CJ77g7hnrSl1"
+    "test:$apr1$lPMwVjPa$HD4BusRHAV/ARVVnWpxUG."
   ]
 
 [http.routers.dashboard]
-  rule = "Host(`poding.net`)"
+  rule = "Host(`192.168.56.10`)"
   entrypoints = ["http"]
   service = "dashboard@internal"
   middlewares = ["dash-auth"]
 
 [http.routers.api]
-  rule = "Host(`poding.net`) && PathPrefix(`/api`)"
+  rule = "Host(`192.168.56.10`) && PathPrefix(`/api`)"
   entrypoints = ["http"]
   service = "api@internal"
   middlewares = ["dash-auth"]
 
 [http.routers.ping]
-  rule = "Host(`poding.net`) && PathPrefix(`/ping`)"
+  rule = "Host(`192.168.56.10`) && PathPrefix(`/ping`)"
   entrypoints = ["http"]
   service = "ping@internal"
   middlewares = ["dash-auth"]

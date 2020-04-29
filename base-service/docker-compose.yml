@@ -7,7 +7,8 @@ networks:
 
 volumes:
     rabbitmq_data: {}
-    postgres:
+    postgres_auth: {}
+    postgres_account: {}
 
 services:
   rabbitmq:
@@ -41,31 +42,16 @@ services:
         delay: 10s
     volumes:
       - /data/services/redis:/data
-  mysqldb:
-    image: mysql:latest
-    container_name: mysqldb
-    networks:
-      - inner-net
-    volumes:
-      - /data/services/mysql:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --init-connect='SET NAMES utf8mb4;' --innodb-flush-log-at-trx-commit=0
-    env_file: .env
-    # ports:
-    #   - "3306:3306"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-  postgres:
-    container_name: postgres
+  auth-db:
+    container_name: auth-db
     image: postgres:alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${AUTH_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${AUTH_POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${AUTH_POSTGRES_DB:-mydb}
       PGDATA: /data/postgres
     volumes:
-       - postgres:/data/postgres
+       - postgres_auth:/data/postgres
     # ports:
     #   - "5432:5432"
     networks:
@@ -74,16 +60,34 @@ services:
       restart_policy:
         condition: on-failure
         delay: 10s
-  # pgadmin:
-  #   container_name: pgadmin
+  # auth_db_admin:
+  #   container_name: auth_db_admin
   #   image: dpage/pgadmin4
   #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-example@abc.com}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-TBcsdwuESD}
+  #     PGADMIN_DEFAULT_EMAIL: ${AUTH_PGADMIN_DEFAULT_EMAIL:-example@abc.com}
+  #     PGADMIN_DEFAULT_PASSWORD: ${AUTH_PGADMIN_DEFAULT_PASSWORD:-TBcsdwuESD}
   #   volumes:
-  #      - pgadmin:/root/.pgadmin
+  #      - auth_pgadmin:/root/.pgadmin
   #   ports:
   #     - "${PGADMIN_PORT:-5050}:80"
   #   networks:
   #     - inner-net
   #   restart: unless-stopped
+  account_db:
+    container_name: account_db
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: ${ACCOUNT_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${ACCOUNT_POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${ACCOUNT_POSTGRES_DB:-mydb}
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_account:/data/postgres
+    # ports:
+    #   - "5432:5432"
+    networks:
+      - inner-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
