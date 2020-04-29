@@ -3,20 +3,14 @@
     "test:$apr1$lPMwVjPa$HD4BusRHAV/ARVVnWpxUG."
   ]
 
-[http.routers.dashboard]
-  rule = "Host(`192.168.56.10`)"
-  entrypoints = ["http"]
-  service = "dashboard@internal"
-  middlewares = ["dash-auth"]
-
 [http.routers.api]
-  rule = "Host(`192.168.56.10`) && PathPrefix(`/api`)"
+  rule = "Host(`poding.net`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
   entrypoints = ["http"]
   service = "api@internal"
   middlewares = ["dash-auth"]
 
 [http.routers.ping]
-  rule = "Host(`192.168.56.10`) && PathPrefix(`/ping`)"
+  rule = "Host(`poding.net`) && PathPrefix(`/ping`)"
   entrypoints = ["http"]
   service = "ping@internal"
   middlewares = ["dash-auth"]

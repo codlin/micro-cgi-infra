@@ -12,7 +12,7 @@ services:
     image: traefik:v2.2.0
     restart: always
     ports:
-      - 80:80
+      - 8080:80
       # - 443:443
     networks:
       - inner-net
@@ -23,7 +23,6 @@ services:
       - ./traefik.toml:/etc/traefik.toml:ro
       - ./config/:/etc/traefik/config/:ro
     healthcheck:
-      # test: ["CMD-SHELL", "wget -q --spider --proxy off localhost:8080/ping || exit 1"]
       test: traefik healthcheck --ping
       interval: 10s
       timeout: 5s
