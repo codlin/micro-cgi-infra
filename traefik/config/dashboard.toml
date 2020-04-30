@@ -4,14 +4,17 @@
   ]
 
 [http.routers.api]
-  rule = "Host(`poding.net`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+  rule = "Host(`192.168.56.10`) && PathPrefix(`/traefik`)"
   entrypoints = ["http"]
   service = "api@internal"
-  middlewares = ["dash-auth"]
+  middlewares = ["dash-auth", "traefik"]
 
 [http.routers.ping]
-  rule = "Host(`poding.net`) && PathPrefix(`/ping`)"
+  rule = "Host(`192.168.56.10`) && PathPrefix(`/ping`)"
   entrypoints = ["http"]
   service = "ping@internal"
   middlewares = ["dash-auth"]
 
+[http.middlewares]
+    [http.middlewares.traefik.stripPrefix]
+        prefixes = ["/traefik"]
